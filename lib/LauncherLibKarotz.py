@@ -21,9 +21,9 @@ class LauncherLibKarotz(object):
        configPath = newpath + '/ALTERNATECONFIG.js'
        
        if not os.path.isdir(dirpath): 
-          print 'OH NO %s' % dirpath
           raise Exception('appdirnotfound')
    
+       print "Copying Directory"
        os.system('mkdir -p %s' % self.pathToTmpDir)
        os.system('rm -fr %s' % newpath)
        os.system('cp -fr "%s" "%s"' % (dirpath, newpath))
@@ -49,6 +49,7 @@ class LauncherLibKarotz(object):
        
        print 'Launching the command line'
        stdin = '%s AAAA %s\\n\\n' % (self.appcode, self.appconfig)
-       cmd = 'printf "%s"|/usr/karotz/bin/karotzVM --app_folder=/usr/karotz/apps' % stdin
+       cmd = 'printf "%s"|/usr/karotz/bin/karotzVM --app_folder=%s' % (stdin, self.pathToTmpDir)
+       print cmd
        os.system(cmd)
           
