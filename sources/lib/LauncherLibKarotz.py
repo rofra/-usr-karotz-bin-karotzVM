@@ -7,6 +7,7 @@ import re
 import urllib
 import os
 import pprint
+import subprocess, time, shlex
 
 class LauncherLibKarotz(object):
    pathToApps = '/usr/karotz/apps'
@@ -19,6 +20,7 @@ class LauncherLibKarotz(object):
        dirpath = self.pathToApps + '/' + appcode + '/'
        newpath = self.pathToTmpDir + '/' + appcode + '/'
        configPath = newpath + '/ALTERNATECONFIG.js'
+       inputPath = newpath + '/STDIN'
        
        if not os.path.isdir(dirpath): 
           raise Exception('appdirnotfound')
@@ -48,8 +50,16 @@ class LauncherLibKarotz(object):
        os.system('rm -f %s/main.js.old'%(newpath))
        
        print 'Launching the command line'
-       stdin = '%s AAAA %s\\n\\n' % (self.appcode, self.appconfig)
-       cmd = 'printf "%s"|/usr/karotz/bin/karotzVM --app_folder=%s' % (stdin, self.pathToTmpDir)
-       print cmd
+       stdin = '%s SCHEDULER %s\\n\\n' % (self.appcode, self.appconfig)
+       cmd = 'printf "%s" > %s' % (stdin, inputPath)
        os.system(cmd)
+       
+       cmd = '/usr/karotz/bin/karotzVM --app_folder=%s < %s' % (self.pathToTmpDir, inputPath)
+
+       print cmd
+       #subprocess.call(cmd)
+       os.system(cmd)
+       
+       # Never stop the process
+       #time.sleep(5000000)   
           
