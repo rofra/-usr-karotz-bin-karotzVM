@@ -43,11 +43,12 @@ class LauncherLibKarotz(object):
        fd.write(stringConf)
        fd.close()
        
-       print 'Modifying the main.js file to add the custom configuration'
-       os.system('cp -f %s/main.js %s/main.js.old' % (newpath,newpath))
-       os.system('echo \'include("ALTERNATECONFIG.js")\' > %s/main.js'%(newpath))
-       os.system('cat %s/main.js.old >> %s/main.js'%(newpath, newpath))
-       os.system('rm -f %s/main.js.old'%(newpath))
+       if os.path.isfile("%s/main.js" % newpath): 
+           print 'Modifying the main.js file to add the custom configuration'
+           os.system('cp -f %s/main.js %s/main.js.old' % (newpath,newpath))
+           os.system('echo \'include("ALTERNATECONFIG.js")\' > %s/main.js'%(newpath))
+           os.system('cat %s/main.js.old >> %s/main.js'%(newpath, newpath))
+           os.system('rm -f %s/main.js.old'%(newpath))
        
        print 'Launching the command line'
        stdin = '%s SCHEDULER %s\\n\\n' % (self.appcode, self.appconfig)
