@@ -45,6 +45,8 @@ configlib.init('%s/config/%s.xml' % (cpath, appcode))
 
 # Instantiate launcher class
 laulib = LauncherLibKarotz.LauncherLibKarotz()
+appsdir = "%s/apps/" % (cpath)
+laulib.init(appsdir)
 
 # Launch !                                         
 laulib.launch(appcode, appconfig, configlib)
