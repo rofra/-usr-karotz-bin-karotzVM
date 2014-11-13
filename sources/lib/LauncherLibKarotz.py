@@ -10,10 +10,21 @@ import pprint
 import subprocess, time, shlex
 
 class LauncherLibKarotz(object):
-   pathToApps = '/usr/karotz/apps'
+#   pathToApps = '/usr/karotz/apps'
    pathToTmpDir = '/tmp/tmpapp/'
    
+   # Init the main variables out of constructor
+   def init(self, pathToApps):
+       if not os.path.isdir(pathToApps):
+           raise Exception('directorynotfound')
+       self.pathToApps = pathToApps
+   
    def launch(self, appcode, appconfig, configlibkarotz):
+       try:
+           self.pathToApps
+       except:
+           raise Exception('configurationnotset')
+        
        self.appcode = appcode
        self.appconfig = appconfig
        
