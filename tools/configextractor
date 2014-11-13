@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+#
+# App Launcher with configuration management
+# 
+#
+# -*- coding: utf-8 -*-
+import sys, getopt, os, pprint, re
+from xml.dom.minidom import xml
+
+# MAIN CALL
+cpath = os.path.dirname(os.path.realpath(__file__))
+dom = xml.dom.minidom.parse('%s/config.xml' % cpath)
+
+dir = '%s/config/'  % (cpath)
+if not os.path.isdir(dir):
+    os.makedirs(dir, 0755)
+
+for node in dom.getElementsByTagName('configapp'):
+     apiKeyK = node.getElementsByTagName('apiKey')[0].firstChild.nodeValue 
+     napi = re.sub('"', '', apiKeyK)
+     
+     configPath = '%s/config/%s.xml' % (cpath, napi)
+     fd = open(configPath, "w")
+     fd.write(node.toxml())
+     fd.close()
+       
+     print "%s extracted" % (napi)
