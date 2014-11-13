@@ -14,7 +14,8 @@
 #       permanentTriggerActivator: "false",
 #       scheduledDateTriggerActivator: "false",
 #       scheduledTriggerActivator: "false",
-#       uuid: "2149cac0-a1c0-49da-a0b0-d8d5cdb0340c"
+#       uuid: "2149cac0-a1c0-49da-a0b0-d8d5cdb0340c",
+#       token: "a7ba610b-4842-43cd-8cfc-3d6bda20035c
 #    }
 # };
 # var instanceName = "config";
@@ -26,6 +27,7 @@ import urllib
 import os
 import pprint
 import array
+import subprocess
 from xml.dom.minidom import xml
 
 class ConfigurationLibKarotz(object):
@@ -46,7 +48,6 @@ class ConfigurationLibKarotz(object):
             subNodeListTmp = node.getElementsByTagName('configInstance')
             subNodeList = subNodeListTmp + subNodeList
     
-        pprint.pprint(nodeList)
         print "%s config found for app %s" % (len(subNodeList), appcode)
         return subNodeList
         
@@ -106,6 +107,13 @@ class ConfigurationLibKarotz(object):
         
         # Append the uuid
         varList.append('uuid: %s' % (uuid))
+        
+        # Append a uniq token
+        tokenCmd = ["cat", "/proc/sys/kernel/random/uuid"]
+        process = subprocess.Popen(tokenCmd,  stdout=subprocess.PIPE,  stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        outClean =  re.sub("\n", "", out)
+        varList.append('token: "%s"' % (outClean))
         
         # Concat the string the javascript way
         carListString = ", \n        ".join(varList)
