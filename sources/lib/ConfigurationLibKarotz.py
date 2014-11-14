@@ -29,18 +29,23 @@ import pprint
 import array
 import subprocess
 from xml.dom.minidom import xml
+import simplejson
 
 class ConfigurationLibKarotz(object):
+    def log(self, string):
+       self.mylog = string
+       print "%s" % self.mylog
 
     # Init the main variables out of constructor
     def init(self, pathToConfigFile):
         if not os.path.isfile(pathToConfigFile):
             raise Exception('configfilenotfound')
         self.configfilepath = pathToConfigFile
+
    
     # Extract the list of Xml Elements relative to one appcode
     def extractConfigListByAppCode(self, appcode):
-        print "Extracting config for app code %s" % appcode
+        self.log("Extracting config for app code %s" % appcode)
         nodeList = self.extractConfigByAppCode(appcode)
         
         subNodeList = []
@@ -48,12 +53,27 @@ class ConfigurationLibKarotz(object):
             subNodeListTmp = node.getElementsByTagName('configInstance')
             subNodeList = subNodeListTmp + subNodeList
     
-        print "%s config found for app %s" % (len(subNodeList), appcode)
+        self.log("%s config found for app %s" % (len(subNodeList), appcode))
         return subNodeList
+        
+    def unescape(self, s):
+        result = ""
+        while len(s) > 0:
+            if s[0] == "\\":
+                (octbyte, s) = (s[1:4], s[4:])
+                try:
+                    result += chr(int(octbyte, 8))
+                except ValueError:
+                    result += "\\"
+                    s = octbyte + s
+            else:
+                result += s[0]
+                s = s[1:]
+        return result
         
     # Extract the Xml Element relative to one appcode AND appconfig
     def extractConfigByAppCodeAndConfig(self, appcode, appconfig):
-        print "Extracting config for app code %s/%s" % (appcode, appconfig)
+        self.log("Extracting config for app code %s/%s" % (appcode, appconfig))
         nodeList = self.extractConfigListByAppCode(appcode)
         
         config = None
@@ -61,6 +81,45 @@ class ConfigurationLibKarotz(object):
             if (node.getElementsByTagName('name')[0].firstChild.nodeValue == '"%s"' % appconfig): 
                 return node
         return None
+        
+    def retPrettyPrint(self, doc):
+        t = cStringIO.StringIO()
+        ext.PrettyPrint(doc,t, encoding='ISO-8859-1')
+        return t.getvalue()
+    
+    # Extract the names of the apps from configuration file
+    def extractAppNameAndConfigFromConfigFile(self, configfilepath, indexFilePath):
+        if not os.path.isfile(configfilepath):
+            raise Exception('configurationnotfound')
+        
+        confList = []
+        
+        dom = xml.dom.minidom.parse(configfilepath)
+        name = dom.getElementsByTagName('name')[0].firstChild.nodeValue
+        apiKey = dom.getElementsByTagName('apiKey')[0].firstChild.nodeValue
+        
+        nameold = name.decode('string_escape')
+        
+        # Prepare app name
+        name = nameold[:40]
+        
+        for configInstance in dom.getElementsByTagName('configInstance'):
+            configname = configInstance.getElementsByTagName('name')[0].firstChild.nodeValue
+            objeccc = {'appcode': re.sub('"', '', apiKey) , 'configname': re.sub('"', '', configname), 'name': re.sub('"', '', name) }
+            
+            line = simplejson.dumps(objeccc)
+            confList.append(line)
+        
+        fullReturn = "".join(confList)
+        
+        # Write to disk
+        fd = open(indexFilePath, "w")
+        fd.write(fullReturn)
+        fd.close()
+        
+        self.log("File %s Successfully generated" % indexFilePath)
+        
+        return fullReturn   
     
     # Extract the Xml Element with all the configurations relative to one appcode
     def extractConfigByAppCode(self, appcode):
@@ -69,21 +128,22 @@ class ConfigurationLibKarotz(object):
         except:
             raise Exception('configurationnotset')
         
-        print "Parsing XML"
+        self.log("Parsing XML")
         dom = xml.dom.minidom.parse(self.configfilepath)
+        
         nodeList = []
         
-        print "Going throw nodes in XML"
+        self.log("Going throw nodes in XML")
         
         for apikeyNode in dom.getElementsByTagName('apiKey'):
             apiKeyK = apikeyNode.firstChild.nodeValue
             
-            print 'APIK = %s' % apiKeyK
+            self.log('APIK = %s' % apiKeyK)
             if (apiKeyK == '"%s"' % appcode): 
                 nodeList.append(apikeyNode.parentNode)
                 
         numFound = len(nodeList)
-        print "Debug: %s elements found :)" % numFound
+        self.log("Debug: %s elements found :)" % numFound)
         
         if (numFound == 0): 
             raise Exception('noconfigurationfound')

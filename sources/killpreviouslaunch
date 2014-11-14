@@ -1,0 +1,15 @@
+#!/bin/bash
+# Killall Previous KarotzVM processes 
+# 
+# We have to do that because when we launch karotzVM, it creates a fork, so there is always a new PID for every launch. 
+# 
+# @author Rodolphe Franceschi <rodolphe.franceschi@gmail.com>
+IFS=$'\n'
+
+COUNTER=0
+for i in `ps aux|grep '/bin/karotzVM'|grep -v 'grep'|sed -e 's/^[ \t]*//' -e 's/[ \t]*$//'|cut -d ' ' -f 1`; do
+    if [ "${COUNTER}" != "0" ]; then
+        kill -15 $i
+    fi
+    let COUNTER=COUNTER+1
+done
